@@ -327,6 +327,10 @@ int sis_terminar_proceso(){
         return 0; /* no debería llegar aqui */
 }
 
+/*
+ * Funcion que devuelve el identificador del proceso que le invoca.
+ */
+
 int obtener_id_pr() {
 	return p_proc_actual->id;
 }

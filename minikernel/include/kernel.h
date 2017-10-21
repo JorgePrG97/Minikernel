@@ -37,6 +37,7 @@ typedef struct BCP_t {
         void * pila;			/* dir. inicial de la pila */
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
+	int t_dormido;			/* segundo que le quedan por dormir al proceso */
 } BCP;
 
 /*
@@ -88,6 +89,7 @@ int sis_crear_proceso();
 int sis_terminar_proceso();
 int sis_escribir();
 int obtener_id_pr();
+int sis_dormir();
 
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
@@ -95,7 +97,8 @@ int obtener_id_pr();
 servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
-					{obtener_id_pr}};
+					{obtener_id_pr}
+					{sis_dormir}};
 
 #endif /* _KERNEL_H */
 
