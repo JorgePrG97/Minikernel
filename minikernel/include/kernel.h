@@ -37,7 +37,7 @@ typedef struct BCP_t {
         void * pila;			/* dir. inicial de la pila */
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
-	int t_dormido;			/* segundo que le quedan por dormir al proceso */
+	unsigned int t_dormido;		/* segundo que le quedan por dormir al proceso */
 } BCP;
 
 /*
@@ -72,6 +72,11 @@ BCP tabla_procs[MAX_PROC];
 lista_BCPs lista_listos= {NULL, NULL};
 
 /*
+ * Variable global que representa la cola de procesos dormidos
+ */
+lista_BCPs lista_dormidos= {NULL, NULL};
+
+/*
  *
  * Definición del tipo que corresponde con una entrada en la tabla de
  * llamadas al sistema.
@@ -97,7 +102,7 @@ int sis_dormir();
 servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
-					{obtener_id_pr}
+					{obtener_id_pr},
 					{sis_dormir}};
 
 #endif /* _KERNEL_H */

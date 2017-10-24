@@ -205,6 +205,17 @@ static void int_terminal(){
  * Tratamiento de interrupciones de reloj
  */
 static void int_reloj(){
+	BCPptr recorrer = lista_dormidos.primero;
+	while(recorrer!=NULL)
+	{
+		recorrer->t_dormido--;
+		if(recorrer->t_dormido==0)
+		{
+			insertar_ultimo(&lista_listos, recorrer);
+			eliminar_elem(&lista_dormidos, recorrer);
+		}
+		recorrer=recorrer->siguiente;
+	}
 
 	printk("-> TRATANDO INT. DE RELOJ\n");
 
@@ -333,6 +344,16 @@ int sis_terminar_proceso(){
 
 int obtener_id_pr() {
 	return p_proc_actual->id;
+}
+
+/*
+ * Funcion que manda dormir a un proceso un determinado tiempo.
+ */
+
+int sis_dormir(unsigned int segundos) {
+	p_proc_actual->t_dormido=segundos;
+	insertar_ultimo(&lista_dormidos, p_proc_actual);
+	cambio_contexto(NULL, &(p_proc_actual->contexto_regs));
 }
 
 /*
