@@ -18,7 +18,7 @@ CC=cc
 CFLAGS=-Wall -fPIC -Werror -g -I$(INCLUDEDIR)
 
 #PROGRAMAS=init excep_arit excep_mem simplon prueba_dormir dormilon prueba_mutex1 creador1 creador2 creador3 creador4 abridor prueba_mutex2 mutex1 mutex2 prueba_RR1 yosoy prueba_RR2 mudo prueba_term lector
-PROGRAMAS=init prueba_RR1 yosoy
+PROGRAMAS=init prueba_dormir dormilon
 
 all: biblioteca $(PROGRAMAS)
 

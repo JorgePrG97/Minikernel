@@ -38,6 +38,7 @@ typedef struct BCP_t {
 	BCPptr siguiente;		/* puntero a otro BCP */
 	void *info_mem;			/* descriptor del mapa de memoria */
 	unsigned int msegundos;
+	unsigned int mticks;
 	int tiempo_rodaja;
 } BCP;
 
@@ -54,6 +55,12 @@ typedef struct{
 	BCP *ultimo;
 } lista_BCPs;
 
+typedef struct{
+	char buff[TAM_BUF_TERM]; //BUFFER DE LECTURA
+	int leer;
+	int escribir;
+	int num_car;
+}buffer_terminal;
 
 /*
  * Variable global que identifica el proceso actual
@@ -72,6 +79,8 @@ BCP tabla_procs[MAX_PROC];
  */
 lista_BCPs lista_listos= {NULL, NULL};
 lista_BCPs lista_bloqueados={NULL,NULL};
+lista_BCPs lista_lectura={NULL,NULL};
+buffer_terminal bufferlectura;
 /*
  *
  * Definición del tipo que corresponde con una entrada en la tabla de
@@ -83,6 +92,7 @@ typedef struct{
 } servicio;
 
 
+
 /*
  * Prototipos de las rutinas que realizan cada llamada al sistema
  */
@@ -91,6 +101,7 @@ int sis_terminar_proceso();
 int sis_escribir();
 int obtener_id_pr();
 int sis_dormir();
+int sis_leer_caracter();
 /*
  * Variable global que contiene las rutinas que realizan cada llamada
  */
@@ -98,7 +109,8 @@ servicio tabla_servicios[NSERVICIOS]={	{sis_crear_proceso},
 					{sis_terminar_proceso},
 					{sis_escribir},
 					{obtener_id_pr},
-					{sis_dormir}};
+					{sis_dormir},
+					{sis_leer_caracter}};
 
 #endif /* _KERNEL_H */
 

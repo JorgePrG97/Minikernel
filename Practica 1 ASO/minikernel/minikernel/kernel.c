@@ -35,7 +35,14 @@ static void iniciar_tabla_proc(){
 	for (i=0; i<MAX_PROC; i++)
 		tabla_procs[i].estado=NO_USADA;
 }
-
+static void iniciar_bufferlectura(){
+	for(int i=0;i<TAM_BUF_TERM;i++){
+		bufferlectura.buff[i]='a';
+	}
+	bufferlectura.num_car=0;
+	bufferlectura.leer=0;
+	bufferlectura.escribir=0;
+}
 /*
  * Función que busca una entrada libre en la tabla de procesos
  */
@@ -109,7 +116,7 @@ static void eliminar_elem(lista_BCPs *lista, BCP * proc){
 static void espera_int(){
 	int nivel;
 
-	printk("-> NO HAY LISTOS. ESPERA INT\n");
+	//printk("-> NO HAY LISTOS. ESPERA INT\n");
 
 	/* Baja al mínimo el nivel de interrupción mientras espera */
 	nivel=fijar_nivel_int(NIVEL_1);
@@ -194,24 +201,13 @@ static void exc_mem(){
 }
 
 /*
- * Tratamiento de interrupciones de terminal
- */
-static void int_terminal(){
-	char car;
-
-	car = leer_puerto(DIR_TERMINAL);
-	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
-
-        return;
-}
-/*
  * Tratamiento de interrupciuones software
  */
 static void int_sw(){
 
-	printk("-> TRATANDO INT. SW\n");
+	//printk("-> TRATANDO INT. SW\n");
 	int id_antiguo=obtener_id_pr();
-	fijar_nivel_int(NIVEL_1);
+	int nivel=fijar_nivel_int(NIVEL_1);
 	BCP *aux=p_proc_actual;
 	p_proc_actual->tiempo_rodaja=TICKS_POR_RODAJA;
 	if(p_proc_actual->siguiente!=NULL){
@@ -220,8 +216,8 @@ static void int_sw(){
 	}
 	p_proc_actual=planificador();
 	int id_actual=obtener_id_pr();
-	printk("Cambio de contexto por fin de rodaja DE %d a %d \n",id_antiguo,id_actual);
-	//fijar_nivel_int(nivel);
+	//printk("Cambio de contexto por fin de rodaja DE %d a %d \n",id_antiguo,id_actual);
+	fijar_nivel_int(nivel);
 	cambio_contexto(&(aux->contexto_regs), &(p_proc_actual->contexto_regs));
 	return;
 }
@@ -231,8 +227,8 @@ static void int_sw(){
  * Tratamiento de interrupciones de reloj
  */
 static void int_reloj(){
-
-	printk("-> TRATANDO INT. DE RELOJ\n");
+	int nivel=fijar_nivel_int(NIVEL_3);
+	//printk("-> TRATANDO INT. DE RELOJ\n");
 	if(p_proc_actual->tiempo_rodaja==0){
 		
 		int_sw();
@@ -246,11 +242,10 @@ static void int_reloj(){
 		if(recorrido->msegundos==0){
 			eliminar_elem(&lista_bloqueados,recorrido);
 			insertar_ultimo(&lista_listos,recorrido);
-		}else{
-			recorrido->msegundos=recorrido->msegundos-1;
 		}
 		recorrido=recorrido->siguiente;
 	}
+	fijar_nivel_int(nivel);
         return;
 }
 
@@ -365,12 +360,62 @@ int sis_terminar_proceso(){
 int sis_dormir(){
 	int aux2=leer_registro(1);
 	BCPptr aux=p_proc_actual;
-	p_proc_actual->msegundos=aux2;
+	p_proc_actual->msegundos=aux2*TICK;
 	eliminar_primero(&lista_listos);
 	insertar_ultimo(&lista_bloqueados,aux);
 	p_proc_actual=planificador();
 	cambio_contexto(&(aux->contexto_regs),&(p_proc_actual->contexto_regs));
 return 0;
+}
+char leer_buffer(){
+	char caracter=bufferlectura.buff[bufferlectura.leer];
+	bufferlectura.num_car--;
+	if(bufferlectura.leer==TAM_BUF_TERM-1){
+		bufferlectura.leer=0;
+	}else{
+		bufferlectura.leer++;
+	}
+	return caracter;
+	
+}
+int sis_leer_caracter(){
+	if (bufferlectura.num_car==0){
+		fijar_nivel_int(NIVEL_3);
+		BCPptr aux=p_proc_actual;
+		eliminar_primero(&lista_listos);
+		insertar_ultimo(&lista_lectura,aux);
+		p_proc_actual=planificador();
+		cambio_contexto(&(aux->contexto_regs),&(p_proc_actual->contexto_regs));
+		fijar_nivel_int(NIVEL_2);
+		return leer_buffer();
+	}else{
+		fijar_nivel_int(NIVEL_2);
+		return leer_buffer();
+	}
+}
+
+/*
+ * Tratamiento de interrupciones de terminal
+ */
+static void int_terminal(){
+	char car;
+	car = leer_puerto(DIR_TERMINAL);
+	//printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
+	if(bufferlectura.num_car<TAM_BUF_TERM){
+		bufferlectura.buff[bufferlectura.escribir]=car;
+		bufferlectura.num_car++;
+		if(bufferlectura.leer==TAM_BUF_TERM-1){
+			bufferlectura.escribir=0;
+		}else{
+			bufferlectura.escribir++;
+		}
+		BCPptr aux=lista_lectura.primero;
+		eliminar_primero(&lista_lectura);
+		insertar_ultimo(&lista_listos,aux);
+		p_proc_actual=planificador();
+		cambio_contexto(NULL,&(p_proc_actual->contexto_regs));
+	}
+        return;
 }
 /*
  *
@@ -392,6 +437,7 @@ int main(){
 	iniciar_cont_teclado();		/* inici cont. teclado */
 
 	iniciar_tabla_proc();		/* inicia BCPs de tabla de procesos */
+	iniciar_bufferlectura();
 
 	/* crea proceso inicial */
 	if (crear_tarea((void *)"init")<0)
