@@ -35,14 +35,6 @@ static void iniciar_tabla_proc(){
 	for (i=0; i<MAX_PROC; i++)
 		tabla_procs[i].estado=NO_USADA;
 }
-static void iniciar_bufferlectura(){
-	for(int i=0;i<TAM_BUF_TERM;i++){
-		bufferlectura.buff[i]='a';
-	}
-	bufferlectura.num_car=0;
-	bufferlectura.leer=0;
-	bufferlectura.escribir=0;
-}
 /*
  * Función que busca una entrada libre en la tabla de procesos
  */
@@ -189,10 +181,8 @@ static void exc_arit(){
  * Tratamiento de excepciones en el acceso a memoria
  */
 static void exc_mem(){
-
 	if (!viene_de_modo_usuario())
 		panico("excepcion de memoria cuando estaba dentro del kernel");
-
 
 	printk("-> EXCEPCION DE MEMORIA EN PROC %d\n", p_proc_actual->id);
 	liberar_proceso();
@@ -200,13 +190,13 @@ static void exc_mem(){
         return; /* no debería llegar aqui */
 }
 
+
 /*
  * Tratamiento de interrupciuones software
  */
-static void int_sw(){
 
+static void int_sw(){
 	//printk("-> TRATANDO INT. SW\n");
-	int id_antiguo=obtener_id_pr();
 	int nivel=fijar_nivel_int(NIVEL_1);
 	BCP *aux=p_proc_actual;
 	p_proc_actual->tiempo_rodaja=TICKS_POR_RODAJA;
@@ -215,14 +205,11 @@ static void int_sw(){
 		insertar_ultimo(&lista_listos,aux);
 	}
 	p_proc_actual=planificador();
-	int id_actual=obtener_id_pr();
-	//printk("Cambio de contexto por fin de rodaja DE %d a %d \n",id_antiguo,id_actual);
+	//printk("FIN RODAJA: C.contexto DE %d a %d \n",id_antiguo,id_actual);
 	fijar_nivel_int(nivel);
 	cambio_contexto(&(aux->contexto_regs), &(p_proc_actual->contexto_regs));
 	return;
 }
-
-
 /*
  * Tratamiento de interrupciones de reloj
  */
@@ -231,7 +218,7 @@ static void int_reloj(){
 	//printk("-> TRATANDO INT. DE RELOJ\n");
 	if(p_proc_actual->tiempo_rodaja==0){
 		
-		int_sw();
+		activar_int_SW();
 	}
 	else{
 		p_proc_actual->tiempo_rodaja--;
@@ -246,8 +233,10 @@ static void int_reloj(){
 		recorrido=recorrido->siguiente;
 	}
 	fijar_nivel_int(nivel);
-        return;
+	return;
 }
+
+
 
 /*
  * Tratamiento de llamadas al sistema
@@ -358,62 +347,64 @@ int sis_terminar_proceso(){
 }
 /*Funcion sis_dormir*/
 int sis_dormir(){
-	int aux2=leer_registro(1);
-	BCPptr aux=p_proc_actual;
-	p_proc_actual->msegundos=aux2*TICK;
-	eliminar_primero(&lista_listos);
-	insertar_ultimo(&lista_bloqueados,aux);
-	p_proc_actual=planificador();
-	cambio_contexto(&(aux->contexto_regs),&(p_proc_actual->contexto_regs));
-return 0;
-}
-char leer_buffer(){
-	char caracter=bufferlectura.buff[bufferlectura.leer];
-	bufferlectura.num_car--;
-	if(bufferlectura.leer==TAM_BUF_TERM-1){
-		bufferlectura.leer=0;
-	}else{
-		bufferlectura.leer++;
-	}
-	return caracter;
-	
-}
-int sis_leer_caracter(){
-	if (bufferlectura.num_car==0){
-		fijar_nivel_int(NIVEL_3);
+		int aux2=leer_registro(1);
 		BCPptr aux=p_proc_actual;
+		p_proc_actual->msegundos=aux2*TICK;
 		eliminar_primero(&lista_listos);
-		insertar_ultimo(&lista_lectura,aux);
+		insertar_ultimo(&lista_bloqueados,aux);
 		p_proc_actual=planificador();
 		cambio_contexto(&(aux->contexto_regs),&(p_proc_actual->contexto_regs));
-		fijar_nivel_int(NIVEL_2);
-		return leer_buffer();
-	}else{
-		fijar_nivel_int(NIVEL_2);
-		return leer_buffer();
+	return 0;
+}
+int sis_leer_caracter(){
+	while(1){
+		if (num_car==0){
+			int nivel=fijar_nivel_int(NIVEL_3);
+			BCP *aux=p_proc_actual;
+			eliminar_elem(&lista_listos, p_proc_actual);
+			insertar_ultimo(&lista_lectura,aux);		
+			fijar_nivel_int(nivel);
+			nivel=fijar_nivel_int(NIVEL_2);
+			p_proc_actual=planificador();
+			cambio_contexto(&(aux->contexto_regs),&(p_proc_actual->contexto_regs));
+			fijar_nivel_int(nivel);
+		}else{
+			int i;
+			// Solicita el primer caracter del buffer
+			int nivel= fijar_nivel_int(NIVEL_2);
+			char car = buffer[0];
+			num_car--;
+
+			// Reordena el buffer
+			for (i = 0; i < num_car; i++){
+				buffer[i] = buffer[i+1];
+			}
+			fijar_nivel_int(nivel);
+			return (int)car;
+		}
 	}
 }
 
 /*
  * Tratamiento de interrupciones de terminal
  */
+
 static void int_terminal(){
+	
 	char car;
 	car = leer_puerto(DIR_TERMINAL);
-	//printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
-	if(bufferlectura.num_car<TAM_BUF_TERM){
-		bufferlectura.buff[bufferlectura.escribir]=car;
-		bufferlectura.num_car++;
-		if(bufferlectura.leer==TAM_BUF_TERM-1){
-			bufferlectura.escribir=0;
-		}else{
-			bufferlectura.escribir++;
+	printk("-> TRATANDO INT. DE TERMINAL %c\n", car);
+	if(num_car<TAM_BUF_TERM){
+		buffer[num_car]=car;
+		num_car++;
+		BCP *aux=lista_lectura.primero;
+		if(aux!=NULL){
+			int nivel=fijar_nivel_int(NIVEL_3);
+			eliminar_primero(&lista_lectura);
+			insertar_ultimo(&lista_listos,aux);
+			fijar_nivel_int(nivel);
 		}
-		BCPptr aux=lista_lectura.primero;
-		eliminar_primero(&lista_lectura);
-		insertar_ultimo(&lista_listos,aux);
-		p_proc_actual=planificador();
-		cambio_contexto(NULL,&(p_proc_actual->contexto_regs));
+		
 	}
         return;
 }
@@ -437,7 +428,6 @@ int main(){
 	iniciar_cont_teclado();		/* inici cont. teclado */
 
 	iniciar_tabla_proc();		/* inicia BCPs de tabla de procesos */
-	iniciar_bufferlectura();
 
 	/* crea proceso inicial */
 	if (crear_tarea((void *)"init")<0)

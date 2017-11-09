@@ -55,13 +55,9 @@ typedef struct{
 	BCP *ultimo;
 } lista_BCPs;
 
-typedef struct{
-	char buff[TAM_BUF_TERM]; //BUFFER DE LECTURA
-	int leer;
-	int escribir;
-	int num_car;
-}buffer_terminal;
-
+char buffer[TAM_BUF_TERM];
+int num_car=0;
+int escribir=0;
 /*
  * Variable global que identifica el proceso actual
  */
@@ -80,7 +76,6 @@ BCP tabla_procs[MAX_PROC];
 lista_BCPs lista_listos= {NULL, NULL};
 lista_BCPs lista_bloqueados={NULL,NULL};
 lista_BCPs lista_lectura={NULL,NULL};
-buffer_terminal bufferlectura;
 /*
  *
  * Definición del tipo que corresponde con una entrada en la tabla de

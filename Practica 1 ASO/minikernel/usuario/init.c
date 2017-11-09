@@ -54,9 +54,9 @@ ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE
 }*/
 
 
-/* PRUEBA DE LA LLAMADA DORMIR*/
+/* PRUEBA DE LA LLAMADA DORMIR
 	if (crear_proceso("prueba_dormir")<0)
-		printf("Error creando prueba_dormir\n");
+		printf("Error creando prueba_dormir\n");*/
 
 /* PRIMERA PRUEBA DE MUTEX
 	if (crear_proceso("prueba_mutex1")<0)
@@ -77,9 +77,9 @@ ALGO COMENTE ESTA PARTE Y DESCOMENTE LA PRUEBA CORRESPONDIENTE
 	if (crear_proceso("prueba_RR2")<0)
 		printf("Error creando prueba_RR2\n");*/
 
-/* PRUEBA DEL TERMINAL
+/* PRUEBA DEL TERMINAL*/
 	if (crear_proceso("prueba_term")<0)
-		printf("Error creando prueba_term\n");*/
+		printf("Error creando prueba_term\n");
 
 	printf("init: termina\n");
 	return 0; 
