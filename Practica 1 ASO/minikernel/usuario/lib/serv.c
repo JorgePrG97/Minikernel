@@ -59,11 +59,11 @@ int abrir_mutex(char *nombre){
 	return llamsis(SIS_ABRIR_MUTEX, 1, (long)nombre);
 }
 int lock(unsigned int mutexid){
-	return llamsis(SIS_LOCK, 1, (unsigned int)mutexid);
+	return llamsis(SIS_LOCK, 1, (long)mutexid);
 }
 int unlock(unsigned int mutexid){
-	return llamsis(SIS_UNLOCK, 1, (unsigned int)mutexid);
+	return llamsis(SIS_UNLOCK, 1, (long)mutexid);
 }
 int cerrar_mutex(unsigned int mutexid){
-	return llamsis(SIS_CERRAR_MUTEX, 1, (unsigned int)mutexid);
+	return llamsis(SIS_CERRAR_MUTEX, 1, (long)mutexid);
 }

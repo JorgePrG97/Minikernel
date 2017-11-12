@@ -70,6 +70,7 @@ typedef struct BCP_t {
 	      unsigned int mticks;
 	      int tiempo_rodaja;
         mutex *descriptores_mutex[NUM_MUT_PROC];    /* numero identificador del mutex */
+        int boolean[NUM_MUT_PROC];                /* 1 posicion ocupada, 0 posicion libre */
         int nMutex;                              /* numero de mutex del proceso */
 } BCP;
 

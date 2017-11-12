@@ -27,11 +27,12 @@
 #define OBTENER_ID 3
 #define SIS_DORMIR 4
 #define SIS_LEER_CARACTER 5
-#define SIS_ABRIR_MUTEX 6
-#define SIS_LOCK 7
-#define SIS_UNLOCK 8
-#define SIS_CERRAR_MUTEX 9
-#define SIS_CREAR_MUTEX 10
+#define SIS_CREAR_MUTEX 6
+#define SIS_ABRIR_MUTEX 7
+#define SIS_LOCK 8
+#define SIS_UNLOCK 9
+#define SIS_CERRAR_MUTEX 10
+
 
 
 #endif /* _LLAMSIS_H */
