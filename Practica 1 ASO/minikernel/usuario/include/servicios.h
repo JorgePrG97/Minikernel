@@ -1,9 +1,9 @@
 /*
  *  usuario/include/servicios.h
  *
- *  Minikernel. Versión 1.0
+ *  Minikernel. Versiï¿½n 1.0
  *
- *  Fernando Pérez Costoya
+ *  Fernando Pï¿½rez Costoya
  *
  */
 
@@ -19,8 +19,11 @@
 #ifndef SERVICIOS_H
 #define SERVICIOS_H
 
-/* Evita el uso del printf de la bilioteca estándar */
+/* Evita el uso del printf de la bilioteca estï¿½ndar */
 #define printf escribirf
+
+#define NO_RECURSIVO 0
+#define RECURSIVO 1
 
 /* Funcion de biblioteca */
 int escribirf(const char *formato, ...);
@@ -32,5 +35,9 @@ int escribir(char *texto, unsigned int longi);
 int obtener_id_pr();
 int dormir(unsigned int segundos);
 int leer_caracter();
+int crear_mutex(char *nombre, int tipo);
+int abrir_mutex(char *nombre);
+int lock(unsigned int mutexid);
+int unlock(unsigned int mutexid);
+int cerrar_mutex(unsigned int mutexid);
 #endif /* SERVICIOS_H */
-

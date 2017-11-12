@@ -1,9 +1,9 @@
 /*
  *  usuario/lib/serv.c
  *
- *  Minikernel. Versión 1.0
+ *  Minikernel. Versiï¿½n 1.0
  *
- *  Fernando Pérez Costoya
+ *  Fernando Pï¿½rez Costoya
  *
  */
 
@@ -19,9 +19,9 @@
 #include "llamsis.h"
 #include "servicios.h"
 
-/* Función del módulo "misc" que prepara el código de la llamada
-   (en el registro 0), los parámetros (en registros 1, 2, ...), realiza la
-   instruccion de llamada al sistema  y devuelve el resultado 
+/* Funciï¿½n del mï¿½dulo "misc" que prepara el cï¿½digo de la llamada
+   (en el registro 0), los parï¿½metros (en registros 1, 2, ...), realiza la
+   instruccion de llamada al sistema  y devuelve el resultado
    (que obtiene del registro 0) */
 
 int llamsis(int llamada, int nargs, ... /* args */);
@@ -44,11 +44,26 @@ int escribir(char *texto, unsigned int longi){
 	return llamsis(ESCRIBIR, 2, (long)texto, (long)longi);
 }
 int obtener_id_pr(){
-	return llamsis(OBTENER_ID,0);
+	return llamsis(OBTENER_ID, 0);
 }
 int dormir(unsigned int segundos){
-	return llamsis(SIS_DORMIR,1,(int)segundos);
+	return llamsis(SIS_DORMIR, 1, (int)segundos);
 }
 int leer_caracter(){
-	return llamsis(SIS_LEER_CARACTER,0);
+	return llamsis(SIS_LEER_CARACTER, 0);
+}
+int crear_mutex(char *nombre, int tipo){
+	return llamsis(SIS_CREAR_MUTEX, 2, (long)nombre, (long)tipo);
+}
+int abrir_mutex(char *nombre){
+	return llamsis(SIS_ABRIR_MUTEX, 1, (long)nombre);
+}
+int lock(unsigned int mutexid){
+	return llamsis(SIS_LOCK, 1, (unsigned int)mutexid);
+}
+int unlock(unsigned int mutexid){
+	return llamsis(SIS_UNLOCK, 1, (unsigned int)mutexid);
+}
+int cerrar_mutex(unsigned int mutexid){
+	return llamsis(SIS_CERRAR_MUTEX, 1, (unsigned int)mutexid);
 }

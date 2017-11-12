@@ -2,9 +2,9 @@
 # usuario/Makefile
 #	Makefile de programas de usuario
 #
-# NOTA: EN LA VERSIÓN INICIAL SÓLO COMPILARÁN CORRECTAMENTE LOS PROGRAMAS
-# init, excep_arit, excep_mem y simplon, YA QUE LOS DEMÁS USAN LLAMADAS QUE
-# NO TIENE QUE IMPLEMENTAR EL ALUMNO 
+# NOTA: EN LA VERSIï¿½N INICIAL Sï¿½LO COMPILARï¿½N CORRECTAMENTE LOS PROGRAMAS
+# init, excep_arit, excep_mem y simplon, YA QUE LOS DEMï¿½S USAN LLAMADAS QUE
+# NO TIENE QUE IMPLEMENTAR EL ALUMNO
 #
 
 
@@ -18,7 +18,7 @@ CC=cc
 CFLAGS=-Wall -fPIC -Werror -g -I$(INCLUDEDIR)
 
 #PROGRAMAS=init excep_arit excep_mem simplon prueba_dormir dormilon prueba_mutex1 creador1 creador2 creador3 creador4 abridor prueba_mutex2 mutex1 mutex2 prueba_RR1 yosoy prueba_RR2 mudo prueba_term lector
-PROGRAMAS=init prueba_dormir dormilon
+PROGRAMAS=init prueba_mutex1 creador1 creador2 creador3 creador4 abridor
 
 all: biblioteca $(PROGRAMAS)
 
@@ -31,15 +31,15 @@ init: init.o $(BIBLIOTECA)
 
 excep_arit.o: $(INCLUDEDIR)/servicios.h
 excep_arit: excep_arit.o $(BIBLIOTECA)
-	$(CC) -shared -o $@ excep_arit.o -L$(LIBDIR)  -lserv 
+	$(CC) -shared -o $@ excep_arit.o -L$(LIBDIR)  -lserv
 
 excep_mem.o: $(INCLUDEDIR)/servicios.h
 excep_mem: excep_mem.o $(BIBLIOTECA)
-	$(CC) -shared -o $@ excep_mem.o -L$(LIBDIR) -lserv 
+	$(CC) -shared -o $@ excep_mem.o -L$(LIBDIR) -lserv
 
 simplon.o: $(INCLUDEDIR)/servicios.h
 simplon: simplon.o $(BIBLIOTECA)
-	$(CC) -shared -o $@ simplon.o -L$(LIBDIR) -lserv 
+	$(CC) -shared -o $@ simplon.o -L$(LIBDIR) -lserv
 
 prueba_dormir.o: $(INCLUDEDIR)/servicios.h
 prueba_dormir: prueba_dormir.o $(BIBLIOTECA)
@@ -112,4 +112,3 @@ lector: lector.o $(BIBLIOTECA)
 clean:
 	rm -f *.o $(PROGRAMAS)
 	cd lib; make clean
-
